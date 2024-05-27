@@ -1,1 +1,1 @@
-# HealthMonitoringSystem
+HealthMonitoringSystem is a Flask-based application designed to serve as the backend for a comprehensive health monitoring system. This application includes all necessary configurations, initializing the Flask app and serving as the main entry point. It integrates functionalities defined in "routes.py" to handle various operations, aiming to improve and facilitate health data management and monitoring tasks. Through this system, users can effectively track and analyze health metrics, contributing to better health insights and decisions.
