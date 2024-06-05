@@ -15,6 +15,9 @@ patients = {
     2: {"name": "Jane Doe", "age": 25, "condition": "Fair"}
 }
 
+def get_next_patient_id():
+    """Function to get the next patient ID."""
+    return max(patients.keys()) + 1 if patients else 1
 
 @app.route("/")
 def home():
@@ -29,37 +32,37 @@ def get_patient(patient_id):
     patient = patients.get(patient_id)
     if patient:
         return jsonify(patient)
-    else:
-        return jsonify({"message": "Patient not found"}), 404
+    return jsonify({"message": "Patient not found"}), 404
 
 @app.route("/patients", methods=["POST"])
 def add_patient():
-    if request.is_json:
-        data = request.get_json()
-        new_id = max(patients.keys()) + 1 if patients else 1
-        patients[new_id] = data
-        return jsonify({"message": DEFAULT_SUCCESS_MESSAGE, "patient_id": new_id}), 201
-    else:
+    if not request.is_json:
         return jsonify({"message": "Request must be JSON"}), 400
+    
+    data = request.get_json()
+    new_id = get_next_patient_id()
+    patients[new_id] = data
+    return jsonify({"message": DEFAULT_SUCCESS_MESSAGE, "patient_id": new_id}), 201
 
 @app.route("/patients/<int:patient_id>", methods=["PUT"])
 def update_patient(patient_id):
     if patient_id not in patients:
         return jsonify({"message": "Patient not found"}), 404
-    if request.is_json:
-        data = request.get_json()
-        patients[patient_id].update(data)
-        return jsonify({"message": DEFAULT_SUCCESS_MESSAGE})
-    else:
+    
+    if not request.is_json:
         return jsonify({"message": "Request must be JSON"}), 400
+    
+    data = request.get_json()
+    patients[patient_id].update(data)
+    return jsonify({"message": DEFAULT_SUCCESS_MESSAGE})
 
 @app.route("/patients/<int:patient_id>", methods=["DELETE"])
 def delete_patient(patient_id):
-    if patient_id in patients:
-        del patients[patient_id]
-        return jsonify({"message": DEFAULT_SUCCESS_MESSAGE})
-    else:
+    if patient_id not in patients:
         return jsonify({"message": "Patient not found"}), 404
+    
+    del patients[patientid]
+    return jsonify({"message": DEFAULT_SUCCESS_MESSAGE})
 
 if __name__ == "__main__":
     app.run(debug=True)
