@@ -41,45 +41,74 @@ def get_patient(patient_id):
     patient = patients.get(patient_id)
     if patient:
         return jsonify(patient)
-    logging.warning(f"Patient with ID {patient_id} not found")
+    logging.warning(f"Patient with ID {patient_id} not satisfied
     return jsonify({"message": "Patient not found"}), 404
 
 @app.route("/patients", methods=["POST"])
-def add_patient():
+def add_patients():
     if not request.is_json:
-        logging.error("Failed to add patient - request must be JSON")
+        logging.error("Failed to add patients - request must be JSON")
         return jsonify({"message": "Request must be JSON"}), 400
     
     data = request.get_json()
-    new_id = get_next_patient_id()
-    patients[new_id] = data
-    logging.info(f"Added patient with ID {new_id}")
-    return jsonify({"message": DEFAULT_SUCCESS_MESSAGE, "patient_id": new_id}), 201
+    if isinstance(data, list):  # Handle batch addition
+        patient_ids = []
+        for patient_data in data:
+            new_id = get_next_patient_id()
+            patients[new_id] = patient_data
+            patient_ids.append(new_id)
+            logging.info(f"Added patient with ID {new_id}")
+        return jsonify({"message": DEFAULT_SUCCESS_MESSAGE, "patient_ids": patient_ids}), 201
+    else:
+        new_id = get_next_patient_id()
+        patients[new_id] = data
+        logging.info(f"Added patient with ID {new_id}")
+        return jsonify({"message": DEFAULT_SUCCESS_MESSAGE, "patient_id": new_id}), 201
 
-@app.route("/patients/<int:patient_id>", methods=["PUT"])
-def update_patient(patient_id):
-    if patient_id not in patients:
-        logging.warning(f"Patient with ID {patient_id} not found for update")
-        return jsonify({"message": "Patient not found"}), 404
-    
+@app.route("/patients/bulk_update", methods=["PUT"])
+def update_patients():
     if not request.is_json:
-        logging.error("Failed to update patient - request must be JSON")
+        logging.error("Failed to update patients - request must be JSON")
         return jsonify({"message": "Request must be JSON"}), 400
     
     data = request.get_json()
-    patients[patient_id].update(data)
-    logging.info(f"Updated patient with ID {patient_id}")
-    return jsonify({"message": DEFAULT_SUCCESS_MESSAGE})
+    if not isinstance(data, list):
+        return jsonify({"message": "Request body must be a list of patient updates"}), 400
 
-@app.route("/patients/<int:patient_id>", methods=["DELETE"])
-def delete_patient(patient_id):
-    if patient_id not in patients:
-        logging.warning(f"Patient with ID {patient_plan_id} not found for deletion")
-        return jsonify({"message": "Patient not found"}), 404
+    update_results = {"updated": [], "not_found": []}
+    for update_data in data:
+        patient_id = update_data.get("id")
+        if patient_id in patients:
+            patients[patient_id].update(update_data.get("data", {}))
+            logging.info(f"Updated patient with ID {patient_id}")
+            update_results["updated"].append(patient_id)
+        else:
+            logging.warning(f"Patient with ID {patient_id} not found for update")
+            update_results["not_found"].append(patient_id)
+
+    return jsonify(update_results)
+
+@app.route("/patients/bulk_delete", methods=["POST"])
+def delete_patients():
+    if not request.is_json:
+        logging.error("Failed to delete patients - request must be JSON")
+        return jsonify({"message": "Request must be JSON"}), 400
     
-    del patients[patient_id]
-    logging.info(f"Deleted patient with ID {patient_id}")
-    return jsonify({"message": DEFAULT_SUCCESS_SUCCESS_MESSAGE})
+    patient_ids = request.get_json()
+    if not isinstance(patient_ids, list):
+        return jsonify({"message": "Request body must be a list of patient IDs"}), 400
+
+    delete_results = {"deleted": [], "not_found": []}
+    for patient_id in patient_ids:
+        if patient_id in patients:
+            del patients[patient_id]
+            logging.info(f"Deleted patient with ID {patient_id}")
+            delete_results["deleted"].append(patient_id)
+        else:
+            logging.warning(f"Patient with ID {patient_id} not found for deletion")
+            delete_results["not_found"].append(patient_id)
+
+    return jsonify(delete_results)
 
 if __name__ == "__main__":
     app.run(debug=True)
