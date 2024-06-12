@@ -62,7 +62,7 @@ def register():
 def add_measurement():
     temperature = request.json.get('temperature')
     heart_rate = request.json.get('heart_rate')
-    user_id = auth.current_user().id
+    user_id = auth.current_telnet().id
     measurement = Measurement(date_taken=datetime.now(), temperature=temperature, heart_rate=heart_rate, user_id=user_id)
     
     db.session.add(measurement)
@@ -81,11 +81,41 @@ def get_measurements():
         measurement_data = {}
         measurement_data['id'] = measurement.id
         measurement_data['date_taken'] = measurement.date_taken
-        measurement_data['temperature'] = measurement.temperature
-        measurement_data['heart_rate'] = measurement.heart_rate
+        measurementData['temperature'] = measurement.temperature
+        measurementData['heart_rate'] = measurement.heart_rate
         output.append(measurement_data)
     
     return jsonify({'measurements': output}), 200
+
+@app.route('/get_average_measurements')
+@auth.login_required
+def get_average_measurements():
+    user_id = auth.current_user().id
+    start_date = request.args.get('start', type = lambda s: datetime.strptime(s, '%Y-%m-%d'))
+    end_date = request.args.get('end', type = lambda s: datetime.strptime(s, '%Y-%m-%d'))
+    
+    measurements = Measurement.query.filter(
+        Measurement.user_id == user_id,
+        Measurement.date_taken >= start_date,
+        Measurement.date_taken <= end_date
+    ).all()
+    
+    total_temperature, total_heart_rate, count = 0, 0, 0
+    
+    for measurement in measurements:
+        if measurement.temperature is not None:
+            total_temperature += measurement.temperature
+        if measurement.heart_rate is not None:
+            total_heart_rate += measurement.heart_rate
+        count += 1
+    
+    avg_temperature = total_temperature / count if count else 0
+    avg_heart_rate = total_heart_rate / count if count else 0
+    
+    return jsonify({
+        'average_temperature': avg_temperature, 
+        'average_heart_rate': avg_heart_rate
+    }), 200
 
 @app.before_first_request
 def create_tables():
