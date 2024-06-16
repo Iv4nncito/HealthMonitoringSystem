@@ -9,7 +9,7 @@ import (
 	"yourprojectpath/analysis"
 )
 
-type HealthData struct {
+type PatientHealthData struct {
 	ID       string  `json:"id"`
 	Patient  string  `json:"patient"`
 	Metric   string  `json:"metric"`
@@ -17,39 +17,40 @@ type HealthData struct {
 	Recorded string  `json:"recorded"`
 }
 
-func healthDataAnalysisHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		http.Error(w, "Method is not supported.", http.StatusNotFound)
+func analyzePatientDataHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Unsupported request method.", http.StatusMethodNotAllowed)
 		return
 	}
 
-	var data HealthData
-	err := json.NewDecoder(r.Body).Decode(&data)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	var healthRecord PatientHealthData
+	if err := json.NewDecoder(r.Body).Decode(&healthRecord); err != nil {
+		http.Error(w, "Failed to decode request body: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	result := analysis.PerformAnalysis(data)
+	analysisResult := analysis.AnalyzeHealthData(healthRecord)
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(result)
+	if err := json.NewEncoder(w).Encode(analysisResult); err != nil {
+		http.Error(w, "Failed to encode response: "+err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func main() {
 	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found")
+		log.Println("Warning: No .env file found. Using default configurations where applicable.")
 	}
 
-	port := os.Getenv("SERVER_PORT")
-	if port == "" {
-		port = "8080"
+	serverPort := os.Getenv("SERVER_PORT")
+	if serverPort == "" {
+		serverPort = "8080"
 	}
 
-	http.HandleFunc("/analyze", healthDataAnalysisHandler)
-	log.Printf("Server starting on port %s\n", port)
+	http.HandleFunc("/analyze", analyzePatientDataHandler)
+	log.Printf("Health Monitoring Server starting on port %s\n", serverPort)
 
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
-		log.Fatalf("Error starting server: %s\n", err)
+	if err := http.ListenAndServe(":"+serverPort, nil); err != nil {
+		log.Fatalf("Failed to start server: %s\n", err)
 	}
 }
