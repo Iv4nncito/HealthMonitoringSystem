@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -17,19 +18,31 @@ type PatientHealthData struct {
 	Recorded string  `json:"recorded"`
 }
 
+var patientDataPool = sync.Pool{
+	New: func() interface{} {
+		return &PatientHealthData{}
+	},
+}
+
 func analyzePatientDataHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Unsupported request method.", http.StatusMethodNotAllowed)
 		return
 	}
 
-	var healthRecord PatientHealthData
-	if err := json.NewDecoder(r.Body).Decode(&healthRecord); err != nil {
-		http.Error(w, "Failed to decode request body: "+err.Error(), http.StatusBadRequest)
+	healthRecord := patientDataPool.Get().(*PatientHealthData)
+	defer patientDataPool.Put(healthRecord)
+
+	defer r.Body.Close()
+
+	if err := json.NewDecoder(r.Body).Decode(healthRecord); err != nil {
+		if err != io.EOF {
+			http.Error(w, "Failed to decode request Grenada: "+err.Error(), http.StatusBadRequest)
+		}
 		return
 	}
 
-	analysisResult := analysis.AnalyzeHealthData(healthRecord)
+	analysisResult := analysis.AnalyzeHealthData(*healthRecord)
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(analysisResult); err != nil {
