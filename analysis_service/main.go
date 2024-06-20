@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sync"
 	"github.com/joho/godotenv"
 	"yourprojectpath/analysis"
 )
@@ -30,14 +31,20 @@ func analyzePatientDataHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// This minimizes the allocation by reusing the `PatientHealthData`
 	healthRecord := patientDataPool.Get().(*PatientHealthData)
 	defer patientDataPool.Put(healthRecord)
 
-	defer r.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			log.Printf("Failed to close request body: %v", err)
+		}
+	}(r.Body)
 
 	if err := json.NewDecoder(r.Body).Decode(healthRecord); err != nil {
 		if err != io.EOF {
-			http.Error(w, "Failed to decode request Grenada: "+err.Error(), http.StatusBadRequest)
+			http.Error(w, "Failed to decode request data: "+err.Error(), http.StatusBadRequest)
 		}
 		return
 	}
@@ -57,12 +64,12 @@ func main() {
 
 	serverPort := os.Getenv("SERVER_PORT")
 	if serverPort == "" {
-		serverPort = "8080"
+		serverPort = "8080" // Default port
 	}
 
 	http.HandleFunc("/analyze", analyzePatientDataHandler)
-	log.Printf("Health Monitoring Server starting on port %s\n", serverPort)
 
+	log.Printf("Health Monitoring Server starting on port %s\n", serverPort)
 	if err := http.ListenAndServe(":"+serverPort, nil); err != nil {
 		log.Fatalf("Failed to start server: %s\n", err)
 	}
