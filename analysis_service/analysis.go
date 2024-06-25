@@ -13,10 +13,11 @@ type HealthMetric struct {
 }
 
 func LoadEnvVar(key, defaultValue string) string {
-	if value, exists := os.LookupEnv(key); exists {
-		return value
+	value, exists := os.LookupEnv(key)
+	if !exists {
+		return defaultValue
 	}
-	return defaultValue
+	return value
 }
 
 func CalculateAverage(metrics []HealthMetric) float64 {
@@ -72,7 +73,7 @@ func ExampleUsage() {
 
 	metrics, err := RetrieveMetrics(metricSource)
 	if err != nil {
-		fmt.Println("Error retrieving metrics:", err)
+		fmt.Printf("Error retrieving metrics: %v\n", err)
 		return
 	}
 
@@ -80,5 +81,5 @@ func ExampleUsage() {
 	trend := CalculateTrend(metrics)
 
 	fmt.Printf("Average value: %.2f\n", average)
-	fmt.Printf("Trend: %d\n", trend)
+	fmt.Printf("Trend: %.0f\n", trend)
 }
