@@ -2,8 +2,8 @@ package healthmetrics
 
 import (
 	"fmt"
+	"math"
 	"os"
-	"strconv"
 	"time"
 )
 
@@ -58,6 +58,21 @@ func CalculateTrend(metrics []HealthMetric) float64 {
 	}
 }
 
+func CalculateVariability(metrics []HealthMetric) float64 {
+	average := CalculateAverage(metrics)
+	if len(metrics) < 2 {
+		return 0
+	}
+
+	var sum float64
+	for _, metric := range metrics {
+		sum += (metric.Value - average) * (metric.Value - average)
+	}
+
+	variance := sum / float64(len(metrics)-1) 
+	return math.Sqrt(variance)
+}
+
 func RetrieveMetrics(source string) ([]HealthMetric, error) {
 	return []HealthMetric{
 		{Time: time.Now().Add(-24 * time.Hour), Value: 72},
@@ -75,11 +90,13 @@ func ExampleUsage() {
 	if err != nil {
 		fmt.Printf("Error retrieving metrics: %v\n", err)
 		return
-	}
-
+    }
+	
 	average := CalculateAverage(metrics)
 	trend := CalculateTrend(metrics)
+	variability := CalculateVariability(metrics) 
 
 	fmt.Printf("Average value: %.2f\n", average)
 	fmt.Printf("Trend: %.0f\n", trend)
+	fmt.Printf("Variability (Std. Deviation): %.2f\n", variability)
 }
