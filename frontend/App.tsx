@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 
-const initialMetrics = [
+const initialHealthMetrics = [
   { id: 1, name: 'Heart Rate', value: '72 bpm', date: new Date().toLocaleString() },
   { id: 2, name: 'Blood Pressure', value: '120/80 mmHg', date: new Date().toLocaleString() }
 ];
 
-interface Metric {
+interface HealthMetric {
   id: number;
   name: string;
   value: string;
@@ -13,45 +13,53 @@ interface Metric {
 }
 
 const HealthMonitoringApp: React.FC = () => {
-  const [metrics, setMetrics] = useState<Metric[]>(initialMetrics);
-  const [newMetric, setNewMetric] = useState({ name: '', value: '' });
+  const [healthMetrics, setHealthMetrics] = useState<HealthMetric[]>(initialHealthMetrics);
+  const [newHealthMetric, setNewHealthMetric] = useState({ name: '', value: '' });
 
-  const addMetric = () => {
-    setMetrics([
-      ...metrics,
+  const handleAddMetric = () => {
+    setHealthMetrics(prevMetrics => [
+      ...prevMetrics,
       {
-        id: metrics.length + 1,
-        name: newMetric.name,
-        value: newMetric.value,
+        id: prevMetrics.length + 1,
+        name: newHealthMetric.name,
+        value: newHealthMetric.value,
         date: new Date().toLocaleString(),
       },
     ]);
-    setNewMetric({ name: '', value: '' });
+    setNewHealthMetric({ name: '', value: '' });
+  };
+
+  const handleMetricNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setNewHealthMetric({ ...newHealthMetric, name: event.target.value });
+  };
+
+  const handleMetricValueChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setNewHealthMetric({ ...newHealthMetric, value: event.target.value });
   };
 
   return (
     <div>
       <h1>Health Monitoring System</h1>
       <div>
-        <h2>Add New Metric</h2>
+        <h2>Add New Health Metric</h2>
         <input
           type="text"
           placeholder="Metric name"
-          value={newMetric.name}
-          onChange={(e) => setNewMetric({ ...newMetric, name: e.target.value })}
+          value={newHealthMetric.name}
+          onChange={handleMetricNameChange}
         />
         <input
           type="text"
           placeholder="Metric value"
-          value={newMetric.value}
-          onChange={(e) => setNewMetric({ ...newMetric, value: e.target.value })}
+          value={newHealthMetric.value}
+          onChange={handleMetricValueChange}
         />
-        <button onClick={addMetric}>Add Metric</button>
+        <button onClick={handleAddMetric}>Add Metric</button>
       </div>
       <div>
-        <h2>Metrics List</h2>
+        <h2>Health Metrics List</h2>
         <ul>
-          {metrics.map(metric => (
+          {healthMetrics.map(metric => (
             <li key={metric.id}>{`${metric.name}: ${metric.value} (Recorded on: ${metric.date})`}</li>
           ))}
         </ul>
