@@ -14,27 +14,25 @@ interface HealthMetric {
 
 const HealthMonitoringApp: React.FC = () => {
   const [healthMetrics, setHealthMetrics] = useState<HealthMetric[]>(initialHealthMetrics);
-  const [newHealthMetric, setNewHealthMetric] = useState({ name: '', value: '' });
+  const [newMetricForm, setNewMetricForm] = useState({ name: '', value: '' });
 
-  const handleAddMetric = () => {
-    setHealthMetrics(prevMetrics => [
-      ...prevMetrics,
-      {
-        id: prevMetrics.length + 1,
-        name: newHealthMetric.name,
-        value: newHealthMetric.value,
-        date: new Date().toLocaleString(),
-      },
-    ]);
-    setNewHealthMetric({ name: '', value: '' });
+  const handleAddNewMetric = () => {
+    const newMetric = {
+      id: healthMetrics.length + 1,
+      name: newMetricForm.name,
+      value: newMetricForm.value,
+      date: new Date().toLocaleString(),
+    };
+    setHealthMetrics(previousMetrics => [...previousMetrics, newMetric]);
+    setNewMetricForm({ name: '', value: '' });
   };
 
-  const handleMetricNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setNewHealthMetric({ ...newHealthMetric, name: event.target.value });
+  const handleNewMetricNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setNewMetricForm({ ...newMetricForm, name: event.target.value });
   };
 
-  const handleMetricValueChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setNewHealthMetric({ ...newHealthMetric, value: event.target.value });
+  const handleNewMetricValueChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setNewMetricForm({ ...newMetricForm, value: event.target.value });
   };
 
   return (
@@ -44,17 +42,17 @@ const HealthMonitoringApp: React.FC = () => {
         <h2>Add New Health Metric</h2>
         <input
           type="text"
-          placeholder="Metric name"
-          value={newHealthMetric.name}
-          onChange={handleMetricNameChange}
+          placeholder="Metric Name"
+          value={newMetricForm.name}
+          onChange={handleNewMetricNameChange}
         />
         <input
           type="text"
-          placeholder="Metric value"
-          value={newHealthMetric.value}
-          onChange={handleMetricValueChange}
+          placeholder="Metric Value"
+          value={newMetricForm.value}
+          onChange={handleNewMetricValueChange}
         />
-        <button onClick={handleAddMetric}>Add Metric</button>
+        <button onClick={handleAddNewMetric}>Add Metric</button>
       </div>
       <div>
         <h2>Health Metrics List</h2>
