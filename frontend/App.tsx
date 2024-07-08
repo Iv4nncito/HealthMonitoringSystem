@@ -15,16 +15,22 @@ interface HealthMetric {
 const HealthMonitoringApp: React.FC = () => {
   const [healthMetrics, setHealthMetrics] = useState<HealthMetric[]>(initialHealthMetrics);
   const [newMetricForm, setNewMetricForm] = useState({ name: '', value: '' });
+  const [error, setError] = useState('');
 
   const handleAddNewMetric = () => {
+    if (!newMetricForm.name || !newMetricForm.value) {
+      setError('Both Name and Value are required.');
+      return;
+    }
     const newMetric = {
-      id: healthMetrics.length + 1,
+      id: healthMetrics.length + 1, // Note: This approach for IDs might lead to duplicates in real applications
       name: newMetricForm.name,
       value: newMetricForm.value,
       date: new Date().toLocaleString(),
     };
     setHealthMetrics(previousMetrics => [...previousMetrics, newMetric]);
     setNewMetricForm({ name: '', value: '' });
+    setError(''); // Clear any existing error
   };
 
   const handleNewMetricNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,6 +59,7 @@ const HealthMonitoringApp: React.FC = () => {
           onChange={handleNewMetricValueChange}
         />
         <button onClick={handleAddNewMetric}>Add Metric</button>
+        {error && <p style={{ color: 'red' }}>{error}</p>}
       </div>
       <div>
         <h2>Health Metrics List</h2>
