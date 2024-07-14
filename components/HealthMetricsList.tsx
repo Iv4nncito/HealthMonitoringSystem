@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 
 type HealthMetric = {
   id: string;
@@ -9,11 +9,15 @@ type HealthMetric = {
 
 interface HealthMetricsListProps {
   metrics: HealthMetric[];
-  onUpdate: (metric: HealthMetric) => void;
+  onUpdate: (metric: Health metric) => void;
   onDelete: (id: string) => void;
 }
 
-const HealthMetricsList: React.FC<HealthMetricsListProps> = ({ metrics, onUpdate, onDelete }) => {
+const HealthMetricsList: React.FC<HealthMetricsListProps> = ({
+  metrics,
+  onUpdate,
+  onDelete,
+}) => {
   const apiUrl = process.env.REACT_APP_API_URL;
 
   const handleDelete = (id: string) => {
@@ -28,7 +32,7 @@ const HealthMetricsList: React.FC<HealthMetricsListProps> = ({ metrics, onUpdate
 
   return (
     <ul>
-      {metrics.map(metric => (
+      {metrics.map((metric) => (
         <li key={metric.id}>
           Type: {metric.type}, Value: {metric.value}, Date: {metric.date}
           <button onClick={() => handleUpdate(metric)}>Update</button>
