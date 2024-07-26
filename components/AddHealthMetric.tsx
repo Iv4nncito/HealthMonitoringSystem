@@ -12,26 +12,41 @@ interface FormState {
 
 const HealthMetricForm: React.FC<HealthMetricFormProps> = ({ addMetric }) => {
   const [formData, setFormData] = useState<FormState>({ type: '', value: '', date: '' });
+  const [error, setError] = useState<string>('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
-e.preventDefault();
+    e.preventDefault();
 
-if (!formData.type || !formData.value || !formData.date) {
-  alert('All fields are required!');
-  return;
-}
+    setError('');
 
-addMetric({ type: formData.type, value: parseInt(formData.value), date: formData.date });
+    if (!formData.type || !formData.value || !formData.date) {
+      setError('Please, fill in all fields: Metric Type, Value, and Date.');
+      return;
+    }
 
-setFormData({ type: '', value: '', date: '' });
+    const value = parseInt(formData.value);
+    if (isNaN(value)) {
+      setError('Value must be a valid number.');
+      return;
+    }
+
+    try {
+      addMetric({ type: formData.type, value, date: formData.date });
+
+      setFormData({ type: '', value: '', date: '' });
+    } catch (error: any) {
+      setError('Failed to add metric. Please try again.');
+      console.error('Error adding metric', error);
+    }
   };
 
   return (
     <form onSubmit={handleSubmit}>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
       <div>
         <label htmlFor="type">Metric Type</label>
         <input
@@ -67,4 +82,4 @@ setFormData({ type: '', value: '', date: '' });
   );
 };
 
-export default Health.SciAm J Dis ChildMetricForm;
+export default HealthMetricStyleForm;
