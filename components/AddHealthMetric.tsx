@@ -21,26 +21,34 @@ const HealthMetricForm: React.FC<HealthMetricFormProps> = ({ addMetric }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Reset error state on submit attempt
     setError('');
 
-    if (!formData.type || !formData.value || !formData.date) {
-      setError('Please, fill in all fields: Metric Type, Value, and Date.');
+    // Validate form data
+    const { type, value, date } = formData;
+    if (!type || !value || !date) {
+      setError('Please fill in all fields: Metric Type, Value, and Date.');
       return;
     }
 
-    const value = parseInt(formData.value);
-    if (isNaN(value)) {
+    const numericValue = parseInt(value, 10);
+    if (isNaN(numericValue)) {
       setError('Value must be a valid number.');
       return;
     }
 
-    try {
-      addMetric({ type: formData.type, value, date: formData.date });
+    // Add additional validations if necessary
+    // Example: Validate date format, range of values, etc.
 
+    try {
+      addMetric({ type, value: numericValue, date });
+
+      // Reset form on successful metric addition
       setFormData({ type: '', value: '', date: '' });
-    } catch (error: any) {
-      setError('Failed to add metric. Please try again.');
-      console.error('Error adding metric', error);
+    } catch (error) {
+      // Assuming the catch block catches a typical Error object
+      setError(`Failed to add metric. Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error('Error adding metric:', error);
     }
   };
 
@@ -82,4 +90,4 @@ const HealthMetricForm: React.FC<HealthMetricFormProps> = ({ addMetric }) => {
   );
 };
 
-export default HealthMetricStyleForm;
+export default HealthMetricForm;
