@@ -7,35 +7,35 @@ interface HealthMetric {
   value: number;
 }
 
-const HealthStats: React.FC = () => {
-  const [healthMetrics, setHealthMetrics] = useState<HealthMetric[]>([]);
+const HealthStatistics: React.FC = () => {
+  const [healthData, setHealthData] = useState<HealthMetric[]>([]);
 
   useEffect(() => {
-    const fetchHealthMetrics = async () => {
+    const fetchHealthData = async () => {
       try {
         const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/health-metrics`);
-        setHealthMetrics(response.data);
+        setHealthData(response.data);
       } catch (error) {
-        console.error("Error fetching health metrics", error);
+        console.error("Error fetching health data", error);
       }
     };
 
-    fetchHealthMetrics();
+    fetchHealthData();
   }, []);
 
-  const calculateAverage = (metrics: HealthMetric[]) => {
-    const sum = metrics.reduce((acc, curr) => acc + curr.value, 0);
-    return (sum / metrics.length) || 0;
+  const calculateAverageMetricValue = (metrics: HealthMetric[]) => {
+    const totalValue = metrics.reduce((acc, currentMetric) => acc + currentMetric.value, 0);
+    return (totalValue / metrics.length) || 0;
   };
 
   return (
     <div>
-      <h2>Average Health Metric: {calculateAverage(healthMetrics).toFixed(2)}</h2>
+      <h2>Average Health Metric: {calculateAverageMetricValue(healthData).toFixed(2)}</h2>
       
       <LineChart
         width={500}
         height={300}
-        data={healthMetrics}
+        data={healthData}
         margin={{
           top: 5,
           right: 30,
@@ -54,4 +54,4 @@ const HealthStats: React.FC = () => {
   );
 };
 
-export default HealthStats;
+export default HealthStatistics;
