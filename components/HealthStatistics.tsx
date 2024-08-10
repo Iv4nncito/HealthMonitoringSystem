@@ -11,7 +11,7 @@ const HealthStatistics: React.FC = () => {
   const [fetchedHealthMetrics, setFetchedHealthMetrics] = useState<HealthMetric[]>([]);
 
   useEffect(() => {
-    const retrieveHealthMetrics = async () => {
+    const fetchHealthMetrics = async () => {
       try {
         const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/health-metrics`);
         setFetchedHealthMetrics(response.data);
@@ -20,28 +20,25 @@ const HealthStatistics: React.FC = () => {
       }
     };
 
-    retrieveHealthMetrics();
+    fetchHealthMetrics();
   }, []);
 
-  const calculateAverageHealthMetric = (metrics: HealthMetric[]) => {
-    const totalHealthValue = metrics.reduce((sum, currentMetric) => sum + currentMetric.value, 0);
-    return (totalHealthValue / metrics.length) || 0;
+  const calculateAverageHealthMetric = (metrics: HealthMetric[]): number => {
+    if (!metrics.length) return 0;
+    const total = metrics.reduce((sum, metric) => sum + metric.value, 0);
+    return total / metrics.length;
   };
+
+  const averageHealthMetric = calculateAverageHealthMetric(fetchedHealthMetrics).toFixed(2);
 
   return (
     <div>
-      <h2>Average Health Metric: {calculateAverageHealthMetric(fetchedHealthMetrics).toFixed(2)}</h2>
-      
+      <h2>Average Health Metric: {averageHealthMetric}</h2>
       <LineChart
         width={500}
         height={300}
         data={fetchedHealthMetrics}
-        margin={{
-          top: 5,
-          right: 30,
-          left: 20,
-          bottom: 5,
-        }}
+        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
       >
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="date" />
