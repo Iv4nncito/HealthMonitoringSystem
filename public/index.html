@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Use Environment Variables in HTML</title>
+    <script src="https://cdn.jsdelivr.net/npm/dotenv@8.2.0/dist/dotenv.min.js"></script> 
+    <script>
+      const env = {
+        API_KEY: "YOUR_API_KEY_HERE",
+      };
+
+      function getEnvVar(variable) {
+        return env[variable];
+      }
+
+      document.addEventListener('DOMContentLoaded', (event) => {
+        console.log("API Key from env:", getEnvVar("API_KEY"));
+      });
+    </script>
+</head>
+<body>
+    <h1>Using .env variables in HTML with JavaScript</h1>
+</body>
+</html>
