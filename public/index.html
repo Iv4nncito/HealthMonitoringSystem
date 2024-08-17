@@ -2,7 +2,7 @@
 <html>
 <head>
     <title>Use Environment Variables in HTML</title>
-    <script src="https://cdn.jsdelivr.net/npm/dotenv@8.2.0/dist/dotenv.min.js"></script> 
+    <script src="https://cdn.jsdelivr.net/npm/dotenv@8.2.0/dist/dotenv.min.js"></script>
     <script>
       const env = {
         API_KEY: "YOUR_API_KEY_HERE",
@@ -12,12 +12,18 @@
         return env[variable];
       }
 
+      function buttonClicked() {
+        console.log("Button clicked!");
+      }
+
       document.addEventListener('DOMContentLoaded', (event) => {
         console.log("API Key from env:", getEnvVar("API_KEY"));
+        document.getElementById('demoButton').addEventListener('click', buttonClicked);
       });
     </script>
 </head>
 <body>
     <h1>Using .env variables in HTML with JavaScript</h1>
+    <button id="demoButton">Click Me</button>
 </body>
 </html>
